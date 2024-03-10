@@ -214,11 +214,19 @@ int main(int argc, char *argv[]) {
         exit(EXIT_FAILURE);
     }
 
-    // Dynamic arrays to store run time and speed
-    runTime = (double *)malloc(MAX_BUFFER_SIZE * sizeof(double));
-    runSpeed = (double *)malloc(MAX_BUFFER_SIZE * sizeof(double));
+        // Dynamic arrays to store run time and speed
+        runTime = (double *)malloc(MAX_BUFFER_SIZE * sizeof(double));
+        runSpeed = (double *)malloc(MAX_BUFFER_SIZE * sizeof(double));
+
+    // Initialize index for current run
+    // Initialize index for current run
+    int currentRunIndex = 0;
 
     while (1) {
+        // Reset arrays for each run
+        memset(runTime, 0, MAX_BUFFER_SIZE * sizeof(double));
+        memset(runSpeed, 0, MAX_BUFFER_SIZE * sizeof(double));
+
         gettimeofday(&startTime, NULL);
 
         getData(clientSocket, &filesize, sizeof(int));
@@ -231,17 +239,22 @@ int main(int argc, char *argv[]) {
 
         // Calculate and store bandwidth for each run
         double bandwidth = (filesize / 1024.0) / (elapsedTime / 1000.0); // in KB/s
-        runTime[totalFilesReceived] = elapsedTime;
-        runSpeed[totalFilesReceived] = bandwidth;
+        runTime[currentRunIndex] = elapsedTime;
+        runSpeed[currentRunIndex] = bandwidth;
 
         totalElapsedTime += elapsedTime;
         totalBandwidth += bandwidth;
         totalFilesReceived++;
 
-        if (!handleSenderResponse(clientSocket)) {
+        // Increment index for current run
+        currentRunIndex++;
+        printf("Current run index: %d\n", currentRunIndex); // Debug statement
+
+        if (handleSenderResponse(clientSocket)!='y') {
             break;
         }
     }
+
     printf("----------------------------------\n");
     // Print statistics for each run
     printf("- * Statistics * -\n");

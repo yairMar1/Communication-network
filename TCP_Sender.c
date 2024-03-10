@@ -1,6 +1,5 @@
 #include <netinet/tcp.h>
 #include <stdbool.h>
-#include <getopt.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -169,13 +168,17 @@ int main(int argc, char *argv[]) {
     remainingBytes = filesize;
 
     // Sending file data
+    off_t offset = 0;
     while (remainingBytes > 0) {
         int bytesToSend = (remainingBytes < chunkSize) ? remainingBytes : chunkSize;
-        int sentBytes = sendData(socketfd, filedata + (filesize - remainingBytes), bytesToSend);
+        int sentBytes = sendData(socketfd, filedata + offset, bytesToSend);
+        if (sentBytes == -1) {
+            perror("Error sending file data.");
+            return 1;
+        }
         totalSentBytes += sentBytes;
         remainingBytes -= sentBytes;
-
-        
+        offset += sentBytes;
     }
 
     // Print transfer statistics
